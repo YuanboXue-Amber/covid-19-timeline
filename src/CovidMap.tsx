@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import * as d3 from 'd3';
-import { ColoredMap } from './ColoredMap';
+import { ColoredMap, IBasicMap } from './ColoredMap';
 import { countryNameIDtable, prop } from './CountryNameIDtable';
 import { colorLegendVertical } from './ColorLegendVertical';
+import { DateSlider } from './DateSlider';
+import { isNullOrUndefined } from 'util';
 // tslint:disable-next-line: no-var-requires
 const topojson = require('topojson-client');
 
@@ -12,12 +14,34 @@ export interface IWorldData {
   infected: number;
 }
 
-export class CovidMap extends Component<{}, {}> {
-  worldGeo: any;
-  worldCovid: any[] = [];
+export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScaleMax: number, sliderProps: any}> {
+  state = {
+    dataDownloaded: false,
+    colorScaleMax: 10000,
+    sliderProps: undefined,
+  };
 
-  componentDidMount() {
-    this.drawBasicMapSVG();
+  worldGeo: any;
+  worldCovid: Map<string, any> = new Map();
+  startDate: Date | undefined;
+  endDate: Date | undefined;
+
+  dataDownloaded = false;
+  colorScaleMax = 10000;
+
+  colorScale: any;
+
+  coloredMap: any;
+
+  constructor() {
+    super({});
+
+    this.drawBasicMapSVG.bind(this);
+    this.getWorldData();
+  }
+
+  constructWorldCovidKey(date: Date) {
+    return `${date.getUTCDate()}/${date.getUTCMonth() + 1}`;
   }
 
   async getWorldData() {
@@ -29,16 +53,34 @@ export class CovidMap extends Component<{}, {}> {
     // worldGeo.id is country. worldGeo.geometry contains type Polygon and coordinates array
     this.worldGeo = (topojson.feature(worldTopo, worldTopo.objects.countries)).features;
 
-    worldCovid.sort((a1: any, a2: any) => {
-      return new Date(a1.date).getTime() - new Date(a2.date).getTime();
+    worldCovid.forEach((day: any) => {
+      const date = new Date(day.date);
+      this.worldCovid.set(this.constructWorldCovidKey(date), day);
+      if (isNullOrUndefined(this.startDate) || this.startDate.getTime() > date.getTime()) {
+        this.startDate = date;
+      }
+      if (isNullOrUndefined(this.endDate) || this.endDate.getTime() < date.getTime()) {
+        this.endDate = date;
+      }
     });
-    this.worldCovid = worldCovid;
-    const dateBegin = new Date(worldCovid[0].date);
-    const dateFinish = new Date(worldCovid[worldCovid.length - 1].date);
+
+    this.colorScale = this.createColorScale();
+    this.drawBasicMapSVG();
   }
 
-  async drawBasicMapSVG() {
-    await this.getWorldData();
+  createColorScale() {
+    const colorScaleMax = this.state.colorScaleMax;
+    const logScale = d3.scaleLog()
+      .domain([1, colorScaleMax]);
+    const colorScale = d3.scaleSequential(
+        (d) => d3.interpolateReds( d === 0 ? d : logScale(d)) );
+    return colorScale;
+  }
+
+  drawBasicMapSVG() {
+    if (isNullOrUndefined(this.state.dataDownloaded)) {
+      return;
+    }
 
     const width = 960;
     const height = 800;
@@ -47,7 +89,7 @@ export class CovidMap extends Component<{}, {}> {
         .attr('height', height)
         .attr('width', width);
 
-    const basicMapProps = {
+    const basicMapProps: IBasicMap = {
       selector: svg,
       projection: d3.geoNaturalEarth1(),
       worldGeo: this.worldGeo,
@@ -55,15 +97,7 @@ export class CovidMap extends Component<{}, {}> {
       sphereColor: '#3bb9b9bd',
     };
     const map = new ColoredMap(basicMapProps);
-    this.colorMapByDay(svg, map);
-  }
-
-  colorMapByDay(svg: any, map: ColoredMap) {
-    const colorScaleMax = 10000;
-    const logScale = d3.scaleLog()
-      .domain([1, colorScaleMax]);
-    const colorScale = d3.scaleSequential(
-        (d) => d3.interpolateReds( d === 0 ? d : logScale(d)) );
+    this.coloredMap = map;
 
     // draw color legend
     const colorLegendG = svg
@@ -72,12 +106,39 @@ export class CovidMap extends Component<{}, {}> {
         .attr('transform', 'translate(80, 250)');
     colorLegendVertical({
       selector: colorLegendG,
-      colorScale, colorWidth: 20, colorHeight: 5, textwidth: 90, colorScaleMax,
+      colorScale: this.colorScale,
+      colorWidth: 20, colorHeight: 5, textwidth: 90,
+      colorScaleMax: this.state.colorScaleMax,
     });
 
+    const sliderG = svg
+      .selectAll('.slider').data([null]).join('g')
+        .attr('class', 'slider')
+        .attr('transform', 'translate(100, 500)');
+    const sliderProps = {
+      selector: sliderG,
+      startDate: this.startDate as Date,
+      endDate: this.endDate as Date,
+      sliderWidth: 800,
+      tickOffset: 10,
+      handleRadius: 10,
+      handleTextOffset: -10,
+      onSliderDragged: this.colorMapByDay.bind(this),
+    };
+    this.setState({
+      dataDownloaded: true,
+      colorScaleMax: this.state.colorScaleMax,
+      sliderProps,
+    }); // re-render
+  }
+
+  colorMapByDay(date: Date) {
     // change color of map everyday
-    const worldData = this.combineWordGeoAndCovid(this.worldGeo, this.worldCovid[50]);
-    map.coloringMap(colorScale, worldData);
+    const todayWorldCovid = this.worldCovid.get(this.constructWorldCovidKey(date));
+    if (!isNullOrUndefined(todayWorldCovid)) {
+      const worldData = this.combineWordGeoAndCovid(this.worldGeo, todayWorldCovid);
+      this.coloredMap.coloringMap(this.colorScale, worldData);
+    }
   }
 
   combineWordGeoAndCovid(worldGeo: any, todayWorldCovid: any): IWorldData[] {
@@ -93,7 +154,7 @@ export class CovidMap extends Component<{}, {}> {
     Object.keys(todayWorldCovid).forEach((country: any) => {
       const id = prop(countryNameIDtable, country);
       const countryData: IWorldData | undefined = map.get(id);
-      if (countryData) {
+      if (!isNullOrUndefined(countryData)) {
         countryData.infected = Number(todayWorldCovid[country]);
         map.set(id, countryData);
       }
@@ -102,6 +163,12 @@ export class CovidMap extends Component<{}, {}> {
   }
 
   render() {
+    if (!isNullOrUndefined(this.state.sliderProps)) {
+      const sliderProps = this.state.sliderProps as any;
+      return <div id="CovidMap">
+              <DateSlider {...sliderProps} />
+             </ div>;
+    }
     return <div id="CovidMap"/>;
   }
 }

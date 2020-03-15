@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import './ColoredMap.css';
 import { IWorldData } from './CovidMap';
 
-interface IBasicMap {
+export interface IBasicMap {
   selector: any;
   projection: any;
   worldGeo: any;
