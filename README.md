@@ -19,6 +19,7 @@ Try it out on my [github page](https://yuanboxue-amber.github.io/covid-19-timeli
 ## What I want to do next
 - Click and pin the map to center
 - Filter and highlight countries by dragging a selection bar on color legend
+- Zoom botton and slide bar for mobile devices
 
 ## I did this because
 - I'm following [Curran Kelleher's awesome D3 tutorial](https://www.youtube.com/watch?v=_8V5o2UHG0E), and wanting to get some practice.
