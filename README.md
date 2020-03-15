@@ -1,8 +1,6 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Covid-19-timeline
--------------------------
-
 ## This is
 An application that shows how new coronavirus spread across the world over time.
 
