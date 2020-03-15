@@ -13,15 +13,14 @@ export interface IBasicMap {
 export class ColoredMap {
   basicMapProps: IBasicMap;
   pathGenerator: any;
-  svgMapG: any;
 
   constructor(props: IBasicMap) {
     this.basicMapProps = props;
-    this.svgMapG = this.renderBasicMap(this.basicMapProps);
+    this.renderBasicMap(this.basicMapProps);
   }
 
   coloringMap(colorScale: any, worldData: IWorldData[]) {
-    const mapG = this.svgMapG;
+    const mapG = this.basicMapProps.selector;
 
     const countries = mapG
       .selectAll('.country')
@@ -42,12 +41,8 @@ export class ColoredMap {
     const pathGenerator = d3.geoPath(projection);
     this.pathGenerator = pathGenerator;
 
-    // Grouping everything in the map
-    const mapG = selector
-      .selectAll('.map').data([null]).join('g')
-        .attr('class', 'map');
-
     // draw sphere to the map
+    const mapG = selector;
     mapG.selectAll('.sphere').data([null]).join('path')
       .attr('class', 'sphere')
       .attr('d', (d: any) => pathGenerator({ type: 'Sphere' }))

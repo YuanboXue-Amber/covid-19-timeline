@@ -23,7 +23,6 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
 
   // used by play button
   playInterWidth: any;
-  playButtonSelection: any;
   cursorMoving = false;
   buttonTimer: any;
   currentCursorWidth = 0;
@@ -43,18 +42,46 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
   }
 
   componentDidMount() {
-    this.playButtonSelection = d3.select('#play-button');
+    const buttonG = this.props.selector
+      .selectAll('.button').data([null]).join('g')
+        .attr('class', 'button');
+    buttonG
+      .selectAll('rect').data([null]).join('rect')
+        .attr('height', '50')
+        .attr('width', '120')
+        .attr('x', '0')
+        .attr('y', '0')
+        .attr('rx', '10')
+        .attr('transform', 'translate(-150, -30)')
+        .attr('fill', '#cb1c1ede');
+    buttonG
+      .selectAll('text').data([null]).join('text')
+        .attr('fill', 'white')
+        .attr('transform', 'translate(-90, 5)')
+        .style('text-anchor', 'middle')
+        .text('Play');
 
-    this.playButtonSelection.on('click', () => {
-      const button = this.playButtonSelection;
-      if (button.text() === 'Pause') {
+    buttonG
+      .on('mouseover', () => {
+        buttonG.select('rect').transition().attr('fill', '#696969');
+      })
+      .on('mouseout', () => {
+        if (buttonG.text() === 'Play') {
+          buttonG.select('rect').transition().attr('fill', '#cb1c1ede');
+        }
+      });
+
+    buttonG.on('click', () => {
+      if (buttonG.text() === 'Pause') {
         this.cursorMoving = false;
         clearInterval(this.buttonTimer);
-        button.text('Play');
+        buttonG.select('rect').transition().attr('fill', '#cb1c1ede');
+        buttonG.select('text').transition().text('Play');
       } else {
         this.cursorMoving = true;
         this.buttonTimer = setInterval(playButtonStep, 100);
-        button.text('Pause');
+        buttonG.select('rect').transition().attr('fill', '#696969');
+        buttonG.select('text').transition().text('Pause');
       }
     });
 
@@ -66,7 +93,8 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
         this.currentCursorWidth = 0;
         clearInterval(this.buttonTimer);
         // timer = 0;
-        this.playButtonSelection.text('Play');
+        buttonG.select('rect').transition().attr('fill', '#cb1c1ede');
+        buttonG.select('text').transition().text('Play');
       }
     };
 
@@ -138,8 +166,6 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
   }
 
   render() {
-    return <div id="DateSlider">
-            <button id="play-button">Play</button>
-           </ div>;
+    return <div id="DateSlider" />;
   }
 }

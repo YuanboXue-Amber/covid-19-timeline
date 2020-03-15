@@ -5,6 +5,7 @@ import { countryNameIDtable, prop } from './CountryNameIDtable';
 import { colorLegendVertical } from './ColorLegendVertical';
 import { DateSlider } from './DateSlider';
 import { isNullOrUndefined } from 'util';
+import './CovidMap.css';
 // tslint:disable-next-line: no-var-requires
 const topojson = require('topojson-client');
 
@@ -82,18 +83,33 @@ export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScale
       return;
     }
 
-    const width = 960;
-    const height = 800;
+    const width = 1024;
+    const height = 768;
     const svg = d3.select('#CovidMap')
-      .selectAll('svg').data([null]).join('svg')
-        .attr('height', height)
-        .attr('width', width);
+      .selectAll('.svg-container').data([null]).join('div')
+        .classed('svg-container', true)
+        .selectAll('svg').data([null]).join('svg')
+          .classed('svg-content-responsive', true)
+          .attr('viewBox', `0 0 ${width} ${height}`)
+          .attr('preserveAspectRatio', `xMinYMin meet`);
 
+    svg
+      .selectAll('.title').data([null]).join('text')
+        .attr('class', 'title')
+        .text('COVID-19 Outbreak Across the World')
+        .attr('font-size', '1.5em')
+        .attr('font-family', 'sans-serif')
+        .attr('transform', `translate(270, 50)`);
+
+    // Grouping everything in the map
+    const mapG = svg
+      .selectAll('.map').data([null]).join('g')
+        .attr('class', 'map');
     const basicMapProps: IBasicMap = {
-      selector: svg,
-      projection: d3.geoNaturalEarth1(),
+      selector: mapG,
+      projection: d3.geoNaturalEarth1().scale(125),
       worldGeo: this.worldGeo,
-      countryColor: '#b5f16b',
+      countryColor: '#fff5f0',
       sphereColor: '#3bb9b9bd',
     };
     const map = new ColoredMap(basicMapProps);
@@ -103,7 +119,7 @@ export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScale
     const colorLegendG = svg
       .selectAll('.colorLegend').data([null]).join('g')
         .attr('class', 'colorLegend')
-        .attr('transform', 'translate(80, 250)');
+        .attr('transform', 'translate(200, 300) scale(0.5, 0.5)');
     colorLegendVertical({
       selector: colorLegendG,
       colorScale: this.colorScale,
@@ -114,15 +130,15 @@ export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScale
     const sliderG = svg
       .selectAll('.slider').data([null]).join('g')
         .attr('class', 'slider')
-        .attr('transform', 'translate(100, 500)');
+        .attr('transform', 'translate(200, 450) scale(0.5, 0.5)');
     const sliderProps = {
       selector: sliderG,
       startDate: this.startDate as Date,
       endDate: this.endDate as Date,
-      sliderWidth: 800,
+      sliderWidth: 1200,
       tickOffset: 10,
       handleRadius: 10,
-      handleTextOffset: -10,
+      handleTextOffset: -20,
       onSliderDragged: this.colorMapByDay.bind(this),
     };
     this.setState({
