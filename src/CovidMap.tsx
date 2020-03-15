@@ -146,6 +146,15 @@ export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScale
       colorScaleMax: this.state.colorScaleMax,
       sliderProps,
     }); // re-render
+
+    // zoom
+    const zoom = d3
+        .zoom()
+        .scaleExtent([1, 8])
+        .on('zoom', () => {
+            mapG.attr('transform', d3.event.transform);
+        });
+    svg.call(zoom as any); // somehow, when it is mapG.call, panning by drag became really hard
   }
 
   colorMapByDay(date: Date) {

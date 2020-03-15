@@ -56,15 +56,6 @@ export class ColoredMap {
     countries.selectAll('title').data((d: any) => [d]).join('title')
       .text((d: any) => `${d.properties.name}`); // set hover text
 
-    // zoom
-    const zoom = d3
-        .zoom()
-        .scaleExtent([1, 8])
-        .on('zoom', () => {
-            mapG.attr('transform', d3.event.transform);
-        });
-    selector.call(zoom as any); // somehow, when it is mapG.call, panning by drag became really hard
-
     return mapG;
   }
 

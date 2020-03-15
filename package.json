@@ -1,12 +1,15 @@
 {
   "name": "coronavirus-map-client",
   "version": "0.1.0",
+  "homepage": "http://YuanboXue-Amber.github.io/covid-19-timeline",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -39,6 +42,7 @@
     "@types/react": "^16.9.23",
     "@types/react-dom": "^16.9.5",
     "@types/topojson-simplify": "^3.0.0",
+    "gh-pages": "^2.2.0",
     "prettier": "^1.19.1",
     "react-test-renderer": "^16.13.0",
     "ts-jest": "^24.0.0",
