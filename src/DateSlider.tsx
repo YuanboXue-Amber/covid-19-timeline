@@ -27,6 +27,9 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
   buttonTimer: any;
   currentCursorWidth = 0;
 
+  buttonPlayColor = '#cb1c1ede';
+  buttonPauseColor = '#696969';
+
   constructor(props: Readonly<IDateSliderProps>) {
     super(props);
 
@@ -53,7 +56,7 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
         .attr('y', '0')
         .attr('rx', '10')
         .attr('transform', 'translate(-150, -30)')
-        .attr('fill', '#cb1c1ede');
+        .attr('fill', this.buttonPlayColor);
     buttonG
       .selectAll('text').data([null]).join('text')
         .attr('fill', 'white')
@@ -63,11 +66,11 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
 
     buttonG
       .on('mouseover', () => {
-        buttonG.select('rect').transition().attr('fill', '#696969');
+        buttonG.select('rect').transition().attr('fill', this.buttonPauseColor);
       })
       .on('mouseout', () => {
         if (buttonG.text() === 'Play') {
-          buttonG.select('rect').transition().attr('fill', '#cb1c1ede');
+          buttonG.select('rect').transition().attr('fill', this.buttonPlayColor);
         }
       });
 
@@ -75,12 +78,12 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
       if (buttonG.text() === 'Pause') {
         this.cursorMoving = false;
         clearInterval(this.buttonTimer);
-        buttonG.select('rect').transition().attr('fill', '#cb1c1ede');
+        buttonG.select('rect').transition().attr('fill', this.buttonPlayColor);
         buttonG.select('text').transition().text('Play');
       } else {
         this.cursorMoving = true;
         this.buttonTimer = setInterval(playButtonStep, 100);
-        buttonG.select('rect').transition().attr('fill', '#696969');
+        buttonG.select('rect').transition().attr('fill', this.buttonPauseColor);
         buttonG.select('text').transition().text('Pause');
       }
     });
@@ -93,7 +96,7 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
         this.currentCursorWidth = 0;
         clearInterval(this.buttonTimer);
         // timer = 0;
-        buttonG.select('rect').transition().attr('fill', '#cb1c1ede');
+        buttonG.select('rect').transition().attr('fill', this.buttonPlayColor);
         buttonG.select('text').transition().text('Play');
       }
     };
@@ -154,14 +157,16 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
     this.handle = selector
       .insert('circle', '.track-overlay')
         .attr('class', 'handle')
-        .attr('r', this.props.handleRadius);
+        .attr('r', this.props.handleRadius)
+        .attr('cx', this.timeScale(this.props.endDate));
 
     // text lable on handle
     this.handleText = selector
       .append('text')
       .attr('class', 'handleText')
       .attr('text-anchor', 'middle')
-      .text(formatDate(this.props.startDate))
+      .attr('x', this.timeScale(this.props.endDate))
+      .text(formatDate(this.props.endDate))
       .attr('transform', `translate(0, ${this.props.handleTextOffset})`);
   }
 

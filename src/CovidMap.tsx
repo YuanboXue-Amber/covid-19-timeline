@@ -15,24 +15,25 @@ export interface IWorldData {
   infected: number;
 }
 
-export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScaleMax: number, sliderProps: any}> {
+export class CovidMap extends Component<{}, {sliderProps: any}> {
   state = {
-    dataDownloaded: false,
-    colorScaleMax: 10000,
     sliderProps: undefined,
   };
+
+  dataDownloaded = false;
 
   worldGeo: any;
   worldCovid: Map<string, any> = new Map();
   startDate: Date | undefined;
   endDate: Date | undefined;
 
-  dataDownloaded = false;
   colorScaleMax = 10000;
-
   colorScale: any;
-
   coloredMap: any;
+  colorNonInfacted = '#ffffff';
+
+  // sphereColor = '#3bb9b950';
+  sphereColor = '#3bb9b99a';
 
   constructor() {
     super({});
@@ -65,21 +66,22 @@ export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScale
       }
     });
 
+    this.dataDownloaded = true;
     this.colorScale = this.createColorScale();
     this.drawBasicMapSVG();
   }
 
   createColorScale() {
-    const colorScaleMax = this.state.colorScaleMax;
+    const colorScaleMax = this.colorScaleMax;
     const logScale = d3.scaleLog()
       .domain([1, colorScaleMax]);
     const colorScale = d3.scaleSequential(
-        (d) => d3.interpolateReds( d === 0 ? d : logScale(d)) );
+        (d) => d === 0 ? this.colorNonInfacted : d3.interpolateReds(logScale(d)));
     return colorScale;
   }
 
   drawBasicMapSVG() {
-    if (isNullOrUndefined(this.state.dataDownloaded)) {
+    if (isNullOrUndefined(this.dataDownloaded)) {
       return;
     }
 
@@ -109,8 +111,8 @@ export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScale
       selector: mapG,
       projection: d3.geoNaturalEarth1().scale(125),
       worldGeo: this.worldGeo,
-      countryColor: '#fff5f0',
-      sphereColor: '#3bb9b9bd',
+      countryColor: this.colorNonInfacted,
+      sphereColor: this.sphereColor,
     };
     const map = new ColoredMap(basicMapProps);
     this.coloredMap = map;
@@ -119,12 +121,11 @@ export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScale
     const colorLegendG = svg
       .selectAll('.colorLegend').data([null]).join('g')
         .attr('class', 'colorLegend')
-        .attr('transform', 'translate(200, 300) scale(0.5, 0.5)');
+        .attr('transform', 'translate(210, 270) scale(0.5, 0.5)');
     colorLegendVertical({
       selector: colorLegendG,
       colorScale: this.colorScale,
-      colorWidth: 20, colorHeight: 5, textwidth: 90,
-      colorScaleMax: this.state.colorScaleMax,
+      colorScaleMax: this.colorScaleMax,
     });
 
     const sliderG = svg
@@ -141,9 +142,10 @@ export class CovidMap extends Component<{}, {dataDownloaded: boolean, colorScale
       handleTextOffset: -20,
       onSliderDragged: this.colorMapByDay.bind(this),
     };
+
+    this.colorMapByDay(this.endDate as Date);
+
     this.setState({
-      dataDownloaded: true,
-      colorScaleMax: this.state.colorScaleMax,
       sliderProps,
     }); // re-render
 

@@ -14,6 +14,9 @@ export class ColoredMap {
   basicMapProps: IBasicMap;
   pathGenerator: any;
 
+  defaultStrokeWidth = '0.02px';
+  coloredStrokeWidth = '0.3px';
+
   constructor(props: IBasicMap) {
     this.basicMapProps = props;
     this.renderBasicMap(this.basicMapProps);
@@ -28,7 +31,8 @@ export class ColoredMap {
       .join('path')
         .attr('class', 'country')
         .attr('d', (d: IWorldData) => this.pathGenerator(d.countryGeo))
-        .attr('fill', (d: IWorldData) => colorScale(d.infected));
+        .attr('fill', (d: IWorldData) => colorScale(d.infected))
+        .attr('stroke-width', (d: IWorldData) => d.infected === 0 ? this.defaultStrokeWidth : this.coloredStrokeWidth);
 
     countries.selectAll('title').data((d: any) => [d]).join('title')
       .text((d: any) => `${d.countryGeo.properties.name}: ${d.infected}`); // set hover text
@@ -51,7 +55,8 @@ export class ColoredMap {
     const countries = mapG.selectAll('.country').data(worldGeo).join('path')
       .attr('class', 'country')
       .attr('d', (d: any) => pathGenerator(d))
-      .attr('fill', countryColor);
+      .attr('fill', countryColor)
+      .attr('stroke-width', this.defaultStrokeWidth);
 
     countries.selectAll('title').data((d: any) => [d]).join('title')
       .text((d: any) => `${d.properties.name}`); // set hover text

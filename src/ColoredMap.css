@@ -1,10 +1,11 @@
 .country {
-  stroke: black;
-  stroke-width: 0.1px;
+  stroke: #67000d;
 }
 
 .country:hover {
   fill: #b5f16b;
+  stroke-width: 0.5px;
+  stroke: #487218;
 }
 
 
