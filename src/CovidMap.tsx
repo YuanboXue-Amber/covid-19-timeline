@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import * as d3 from 'd3';
 import { ColoredMap, IBasicMap } from './ColoredMap';
 import { countryNameIDtable, prop } from './CountryNameIDtable';
-import { colorLegendVertical } from './ColorLegendVertical';
 import { DateSlider } from './DateSlider';
+import { ColorLegendVertical } from './ColorLegendVertical';
 import { isNullOrUndefined } from 'util';
 import './CovidMap.css';
 // tslint:disable-next-line: no-var-requires
@@ -122,12 +122,23 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
       .selectAll('.colorLegend').data([null]).join('g')
         .attr('class', 'colorLegend')
         .attr('transform', 'translate(210, 270) scale(0.5, 0.5)');
-    colorLegendVertical({
+
+    let clickedDomain: any;
+    const onClick = (d: [number, number] | null) => {
+      clickedDomain = d;
+      map.hilightingMap(clickedDomain);
+      colorLegend.clickableLegend(clickedDomain);
+    };
+
+    const colorLegend = new ColorLegendVertical({
       selector: colorLegendG,
       colorScale: this.colorScale,
       colorScaleMax: this.colorScaleMax,
+      onClick,
+      clickedDomain,
     });
 
+    // draw slider
     const sliderG = svg
       .selectAll('.slider').data([null]).join('g')
         .attr('class', 'slider')
@@ -143,11 +154,8 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
       onSliderDragged: this.colorMapByDay.bind(this),
     };
 
+    // set starting state as the latest day
     this.colorMapByDay(this.endDate as Date);
-
-    this.setState({
-      sliderProps,
-    }); // re-render
 
     // zoom
     const zoom = d3
@@ -157,6 +165,11 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
             mapG.attr('transform', d3.event.transform);
         });
     svg.call(zoom as any); // somehow, when it is mapG.call, panning by drag became really hard
+
+    // re-render now that all datas are loaded
+    this.setState({
+      sliderProps,
+    });
   }
 
   colorMapByDay(date: Date) {

@@ -38,6 +38,22 @@ export class ColoredMap {
       .text((d: any) => `${d.countryGeo.properties.name}: ${d.infected}`); // set hover text
   }
 
+  hilightingMap( range: [number, number] | null) {
+    const mapG = this.basicMapProps.selector;
+
+    const countries = mapG.selectAll('.country')
+      .attr('opacity', (d: IWorldData) => {
+        if (range === null) {
+          return 1;
+        }
+        if (d.infected >= range[0] && d.infected <= range[1]) {
+          return 1;
+        } else {
+          return 0.2;
+        }
+      });
+  }
+
   renderBasicMap(props: IBasicMap) {
     const {selector, projection, worldGeo, countryColor, sphereColor} = props;
 
