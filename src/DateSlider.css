@@ -39,14 +39,12 @@
 
 .button rect {
   border: none;
+  cursor: pointer;
 }
 
 .button text {
   fill:white;
   font-size: 2em;
   font-family: sans-serif;
+  cursor: pointer; /* Add cursor pointer here, otherwise mobile device will auto select the text while click */
 }
-/*
-.button rect:hover {
-  fill: #696969;
-} */

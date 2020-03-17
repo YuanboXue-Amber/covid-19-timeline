@@ -95,7 +95,11 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
           .attr('viewBox', `0 0 ${width} ${height}`)
           .attr('preserveAspectRatio', `xMinYMin meet`);
 
-    svg
+    const zoomG = svg
+      .selectAll('.zoom-container').data([null]).join('g')
+      .attr('class', 'zoom-container');
+
+    zoomG
       .selectAll('.title').data([null]).join('text')
         .attr('class', 'title')
         .text('COVID-19 Outbreak Across the World')
@@ -103,8 +107,12 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
         .attr('font-family', 'sans-serif')
         .attr('transform', `translate(270, 50)`);
 
+    const tooltip = d3.select('#CovidMap').selectAll('.country-tooltip').data([null]).join('div')
+      .attr('class', 'country-tooltip')
+      .style('opacity', 0);
+
     // Grouping everything in the map
-    const mapG = svg
+    const mapG = zoomG
       .selectAll('.map').data([null]).join('g')
         .attr('class', 'map');
     const basicMapProps: IBasicMap = {
@@ -113,12 +121,13 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
       worldGeo: this.worldGeo,
       countryColor: this.colorNonInfacted,
       sphereColor: this.sphereColor,
+      tooltip,
     };
     const map = new ColoredMap(basicMapProps);
     this.coloredMap = map;
 
     // draw color legend
-    const colorLegendG = svg
+    const colorLegendG = zoomG
       .selectAll('.colorLegend').data([null]).join('g')
         .attr('class', 'colorLegend')
         .attr('transform', 'translate(210, 270) scale(0.5, 0.5)');
@@ -139,7 +148,7 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
     });
 
     // draw slider
-    const sliderG = svg
+    const sliderG = zoomG
       .selectAll('.slider').data([null]).join('g')
         .attr('class', 'slider')
         .attr('transform', 'translate(200, 450) scale(0.5, 0.5)');
@@ -159,11 +168,11 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
 
     // zoom
     const zoom = d3
-        .zoom()
-        .scaleExtent([1, 8])
-        .on('zoom', () => {
-            mapG.attr('transform', d3.event.transform);
-        });
+      .zoom()
+      .scaleExtent([1, 8])
+      .on('zoom', () => {
+        zoomG.attr('transform', d3.event.transform);
+      });
     svg.call(zoom as any); // somehow, when it is mapG.call, panning by drag became really hard
 
     // re-render now that all datas are loaded

@@ -74,6 +74,7 @@ export class ColorLegendVertical {
       .attr('stop-color', (d: IGradientData) => d.color);
 
     // gradient scale
+    // eslint-disable-next-line
     const rect = this.colorLegendVerticalG.selectAll('.gradient-rect').data([null]).join('rect')
       .attr('class', 'gradient-rect')
       .attr('fill', 'url(#svgGradient)')

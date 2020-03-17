@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import './ColoredMap.css';
 import { IWorldData } from './CovidMap';
+import { isNullOrUndefined } from 'util';
 
 export interface IBasicMap {
   selector: any;
@@ -8,6 +9,7 @@ export interface IBasicMap {
   worldGeo: any;
   countryColor: string;
   sphereColor: string;
+  tooltip: any;
 }
 
 export class ColoredMap {
@@ -17,9 +19,42 @@ export class ColoredMap {
   defaultStrokeWidth = '0.02px';
   coloredStrokeWidth = '0.3px';
 
+  tooltipHide = (tooltip: any) => {
+    tooltip.style('opacity', 0);
+  }
+  tooltipShow = (tooltip: any, d: any) => {
+    tooltip
+      .transition()
+      .style('opacity', 1);
+    let text;
+    if (!isNullOrUndefined(d.infected)) {
+      text = `${d.countryGeo.properties.name}: ${d.infected}`;
+    } else {
+      text = d.properties.name;
+    }
+    tooltip
+      .style('left', d3.event.pageX + 'px')
+      .style('top', d3.event.pageY + 'px')
+      .text(text);
+  }
+
   constructor(props: IBasicMap) {
     this.basicMapProps = props;
     this.renderBasicMap(this.basicMapProps);
+  }
+
+  renderTooltip(countries: any) {
+    const tooltip = this.basicMapProps.tooltip;
+    countries
+      .on('click', (d: any) => {
+        this.tooltipShow(tooltip, d);
+      })
+      .on('mouseover', (d: any) => {
+        this.tooltipShow(tooltip, d);
+      })
+      .on('mouseout',  (d: any) => {
+        this.tooltipHide(tooltip);
+      });
   }
 
   coloringMap(colorScale: any, worldData: IWorldData[]) {
@@ -34,13 +69,13 @@ export class ColoredMap {
         .attr('fill', (d: IWorldData) => colorScale(d.infected))
         .attr('stroke-width', (d: IWorldData) => d.infected === 0 ? this.defaultStrokeWidth : this.coloredStrokeWidth);
 
-    countries.selectAll('title').data((d: any) => [d]).join('title')
-      .text((d: any) => `${d.countryGeo.properties.name}: ${d.infected}`); // set hover text
+    this.renderTooltip(countries);
   }
 
   hilightingMap( range: [number, number] | null) {
     const mapG = this.basicMapProps.selector;
 
+    // eslint-disable-next-line
     const countries = mapG.selectAll('.country')
       .attr('opacity', (d: IWorldData) => {
         if (range === null) {
@@ -68,14 +103,13 @@ export class ColoredMap {
       .attr('d', (d: any) => pathGenerator({ type: 'Sphere' }))
       .attr('fill', sphereColor);
 
-    const countries = mapG.selectAll('.country').data(worldGeo).join('path')
+    const countries = mapG.selectAll('.country').data(worldGeo, (d: any) => d.id).join('path')
       .attr('class', 'country')
       .attr('d', (d: any) => pathGenerator(d))
       .attr('fill', countryColor)
       .attr('stroke-width', this.defaultStrokeWidth);
 
-    countries.selectAll('title').data((d: any) => [d]).join('title')
-      .text((d: any) => `${d.properties.name}`); // set hover text
+    this.renderTooltip(countries);
 
     return mapG;
   }
