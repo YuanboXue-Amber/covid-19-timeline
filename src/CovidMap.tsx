@@ -221,10 +221,12 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
 
     Object.keys(todayWorldCovid).forEach((country: any) => {
       const id = prop(countryNameIDtable, country);
-      const countryData: IWorldData | undefined = map.get(id);
-      if (!isNullOrUndefined(countryData)) {
-        countryData.infected = Number(todayWorldCovid[country]);
-        map.set(id, countryData);
+      if (!isNullOrUndefined(id)) {
+        const countryData: IWorldData | undefined = map.get(id);
+        if (!isNullOrUndefined(countryData)) {
+          countryData.infected = Number(todayWorldCovid[country]);
+          map.set(id, countryData);
+        }
       }
     });
     return Array.from(map.values());
