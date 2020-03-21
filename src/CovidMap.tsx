@@ -55,16 +55,35 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
     // worldGeo.id is country. worldGeo.geometry contains type Polygon and coordinates array
     this.worldGeo = (topojson.feature(worldTopo, worldTopo.objects.countries)).features;
 
-    worldCovid.forEach((day: any) => {
+    worldCovid.sort((d1: any, d2: any) => {
+      const date1 = new Date(d1.date);
+      const date2 = new Date(d2.date);
+      return date1.getTime() - date2.getTime();
+    });
+    this.startDate = new Date(worldCovid[0].date);
+    this.endDate = new Date(worldCovid[worldCovid.length - 1].date);
+
+    let yesterdayDataPerCountry: any = null;
+    for (const day of worldCovid) {
+      // iterate through each country to fill in blank data
+      for (const country in day) {
+        if (Object.prototype.hasOwnProperty.call(day, country)) {
+          if (country === 'date') { continue; }
+          const infected = day[country];
+          if (infected === '') {
+            // no data for today, check yesterday
+            if (yesterdayDataPerCountry === null) {
+              day[country] = 0;
+            } else {
+              day[country] = yesterdayDataPerCountry[country];
+            }
+          }
+        }
+      }
       const date = new Date(day.date);
       this.worldCovid.set(this.constructWorldCovidKey(date), day);
-      if (isNullOrUndefined(this.startDate) || this.startDate.getTime() > date.getTime()) {
-        this.startDate = date;
-      }
-      if (isNullOrUndefined(this.endDate) || this.endDate.getTime() < date.getTime()) {
-        this.endDate = date;
-      }
-    });
+      yesterdayDataPerCountry = day;
+    }
 
     this.dataDownloaded = true;
     this.colorScale = this.createColorScale();
