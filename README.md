@@ -13,7 +13,7 @@ Try it out on my [github page](https://yuanboxue-amber.github.io/covid-19-timeli
 - d3
 
 ## I get my data from
-- Topojson to create the map: https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json
+- Topojson to create the map: https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json
 - Covid-19 total cases per country: https://covid.ourworldindata.org/data/ecdc/total_cases.csv
 
 ## What I want to do next

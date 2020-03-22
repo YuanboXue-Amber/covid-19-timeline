@@ -48,7 +48,7 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
 
   async getWorldData() {
     const [worldTopo, worldCovid]  = await Promise.all([
-      d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'),
+      d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json'),
       d3.csv('https://covid.ourworldindata.org/data/ecdc/total_cases.csv'),
     ]);
 

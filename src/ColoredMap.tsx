@@ -16,8 +16,8 @@ export class ColoredMap {
   basicMapProps: IBasicMap;
   pathGenerator: any;
 
-  defaultStrokeWidth = '0.02px';
-  coloredStrokeWidth = '0.3px';
+  defaultStrokeWidth = '0.01px';
+  coloredStrokeWidth = '0.1px';
 
   tooltipHide = (tooltip: any) => {
     tooltip.style('opacity', 0);

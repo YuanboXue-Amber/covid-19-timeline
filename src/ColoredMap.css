@@ -4,7 +4,7 @@
 
 .country:hover {
   fill: #b5f16b;
-  stroke-width: 0.5px;
+  stroke-width: 0.1px;
   stroke: #487218;
 }
 
