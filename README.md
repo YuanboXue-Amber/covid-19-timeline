@@ -5,7 +5,14 @@ An application that shows how new coronavirus spread across the world over time.
 
 Try it out on my [github page](https://yuanboxue-amber.github.io/covid-19-timeline/)
 
-![Demo](/demo.gif)
+- Show how it spread over time
+![](/demo1.gif)
+
+- Click and select countries with total cases that fall in certain range
+![](/demo2.gif)
+
+- Drag the slider to view the situation in a specific day
+![](/demo3.gif)
 
 ## I used
 - typescript
