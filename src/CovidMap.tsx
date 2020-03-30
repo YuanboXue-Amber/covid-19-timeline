@@ -27,7 +27,7 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
   startDate: Date | undefined;
   endDate: Date | undefined;
 
-  colorScaleMax = 10000;
+  colorScaleMax = 100000;
   colorScale: any;
   coloredMap: any;
   colorNonInfacted = '#ffffff';
@@ -95,7 +95,7 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
     const logScale = d3.scaleLog()
       .domain([1, colorScaleMax]);
     const colorScale = d3.scaleSequential(
-        (d) => d === 0 ? this.colorNonInfacted : d3.interpolateReds(logScale(d)));
+        (d) => d === 0 ? this.colorNonInfacted : (d >= colorScaleMax ? '#4d0000' : d3.interpolateYlOrRd(logScale(d))) );
     return colorScale;
   }
 
@@ -149,7 +149,7 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
     const colorLegendG = zoomG
       .selectAll('.colorLegend').data([null]).join('g')
         .attr('class', 'colorLegend')
-        .attr('transform', 'translate(210, 270) scale(0.5, 0.5)');
+        .attr('transform', 'translate(210, 260) scale(0.5, 0.5)');
 
     let clickedDomain: any;
     const onClick = (d: [number, number] | null) => {

@@ -1,3 +1,4 @@
+import * as d3 from 'd3';
 
 export interface IColorLegendVerticalProps {
   selector: any;
@@ -11,14 +12,16 @@ interface IGradientData {
   number: number; offset: string; color: string;
 }
 
+const format = d3.format(',d');
+
 export class ColorLegendVertical {
   props: IColorLegendVerticalProps;
 
-  backgroundWidth = 175;
-  backgroundHeight = 230;
+  backgroundWidth = 160;
+  backgroundHeight = 250;
   barMargin = {top: 25, left: 15};
   barWidth = 30;
-  barHeight = 180;
+  barHeight = 200;
   fontsize = 18;
 
   colorLegendVerticalG: any;
@@ -29,7 +32,7 @@ export class ColorLegendVertical {
       .selectAll('#ColorLegendVertical').data([1]).join('g')
         .attr('id', 'ColorLegendVertical');
     this.background();
-    this.gradientLegend();
+    // this.gradientLegend();
     this.clickableLegend(this.props.clickedDomain);
   }
 
@@ -93,7 +96,7 @@ export class ColorLegendVertical {
         .attr('y', this.barMargin.top * 0.75);
 
     this.colorLegendVerticalG.selectAll('.textMax')
-      .data([`>${colorScaleMax}`]).join('text')
+      .data([`>${format(colorScaleMax)}`]).join('text')
         .attr('class', 'textMax')
         .attr('text-anchor', 'middle')
         .text((d: string) => d)
@@ -110,11 +113,16 @@ export class ColorLegendVertical {
     const clickableG = this.colorLegendVerticalG.selectAll('.clickable').data([null]).join('g')
       .attr('class', 'clickable');
 
-    const clickableRanges = [[1, 9], [10, 99], [100, 999], [1000, 9999], [colorScaleMax, 7530000000]];
-    const interval = (this.backgroundHeight - this.barMargin.top * 2) / clickableRanges.length;
+    const clickableRanges = [
+      [1, 9], [10, 99], [100, 999], [1000, 4999], [5000, 9999],
+      [10000, 50000 - 1], [50000, colorScaleMax - 1], [colorScaleMax, 7530000000]];
+    // const interval = (this.backgroundHeight - this.barMargin.top * 2) / clickableRanges.length;
+    const interval = (this.backgroundHeight - this.fontsize) / clickableRanges.length;
     const ticksGroups = clickableG.selectAll('.clickable-ticks').data(clickableRanges).join('g')
       .attr('class', 'clickable-ticks')
-      .attr('transform', (d: any, i: number) => `translate(${this.barMargin.left * 2 + this.barWidth}, ${this.barMargin.top * 1.25 + interval * i})`)
+      // tslint:disable-next-line: max-line-length
+      // .attr('transform', (d: any, i: number) => `translate(${this.barMargin.left * 2 + this.barWidth}, ${this.barMargin.top * 1.25 + interval * i})`)
+      .attr('transform', (d: any, i: number) => `translate(${this.fontsize}, ${this.fontsize + interval * i})`)
       .attr('cursor', 'pointer')
       .attr('opacity', (d: any) =>
           (!clickedDomain || (d[0] === clickedDomain[0] && d[1] === clickedDomain[1]))
@@ -135,7 +143,7 @@ export class ColorLegendVertical {
       .attr('text-anchor', 'left')
       .attr('dominant-baseline', 'hanging')
       .attr('transform', `translate(${buttonWidth * 1.2}, 0)`)
-      .text((d: any[]) => d[0] === colorScaleMax ? `>${colorScaleMax}` : `${d[0]}-${d[1]}`);
+      .text((d: any[]) => d[0] === colorScaleMax ? `>${format(colorScaleMax)}` : `${format(d[0])}-${format(d[1])}`);
   }
 
 }
