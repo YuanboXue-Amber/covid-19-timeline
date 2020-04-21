@@ -56,23 +56,23 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
     this.worldGeo = (topojson.feature(worldTopo, worldTopo.objects.countries)).features;
 
     // ---- Tools to generate countryNameIDtable
-    let mymap = new Map();
-    this.worldGeo.forEach((country: any) => {
-      mymap.set(country.properties.name, country.id)
-    });
-    let out = "";
-    mymap.forEach((value, key) => { out += `"${key}": "${value}",\n`} )
-    // console.log(out) // worldgeo countryname and id
+    // let mymap = new Map();
+    // this.worldGeo.forEach((country: any) => {
+    //   mymap.set(country.properties.name, country.id)
+    // });
+    // let out = "";
+    // mymap.forEach((value, key) => { out += `"${key}": "${value}",\n`} )
+    // // console.log(out) // worldgeo countryname and id
 
-    // check which country is in worldGeo but not in countryNameIDtable
-    mymap = new Map();
-    out = "";
-    this.worldGeo.forEach((country: any) => {
-      if (!prop(countryNameIDtable, country.properties.name)) {
-        out += `"${country.properties.name}": "${country.id}",\n`
-      }
-    });
-    console.log(out)
+    // // check which country is in worldGeo but not in countryNameIDtable
+    // mymap = new Map();
+    // out = "";
+    // this.worldGeo.forEach((country: any) => {
+    //   if (!prop(countryNameIDtable, country.properties.name)) {
+    //     out += `"${country.properties.name}": "${country.id}",\n`
+    //   }
+    // });
+    // console.log(out)
 
     // let countryNameMap = new Map();
     // Object.keys(worldCovid[0]).forEach((country: any) => {

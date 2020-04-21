@@ -90,7 +90,7 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
 
     const playButtonStep = () => {
       this.updateDateSlider(this.timeScale.invert(this.currentCursorWidth));
-      this.currentCursorWidth += this.playInterWidth; // move 1 tick per step
+      this.currentCursorWidth += this.playInterWidth; // move 1 day per step
       if (this.currentCursorWidth > this.props.sliderWidth + this.playInterWidth) {
         this.cursorMoving = false;
         this.currentCursorWidth = 0;
@@ -137,16 +137,18 @@ export class DateSlider extends Component<IDateSliderProps, {}>  {
         }),
     );
 
-    // draw ticks, one per week
+    // draw ticks, one per week, no more than 15 ticks
     const nDays = Math.floor((this.props.endDate.getTime() - this.props.startDate.getTime())
-      / (1000 * 60 * 60 * 24 * 7));
-    this.playInterWidth = this.props.sliderWidth / ((nDays + 1) * 7);
+      / (1000 * 60 * 60 * 24));
+    const nWeeks = Math.floor(nDays/7);
+    const nTicks = nWeeks > 15 ? 15 : nWeeks;
+    this.playInterWidth = this.props.sliderWidth / ((nDays + 1));
     selector
       .insert('g', '.track-overlay')
         .attr('class', 'ticks')
         .attr('transform', `translate(0, ${this.props.tickOffset})`)
         .selectAll('text')
-        .data(this.timeScale.ticks(nDays))
+        .data(this.timeScale.ticks(nTicks))
         .join('text')
           .attr('x', this.timeScale)
           .attr('y', 10)
