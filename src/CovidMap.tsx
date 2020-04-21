@@ -55,6 +55,35 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
     // worldGeo.id is country. worldGeo.geometry contains type Polygon and coordinates array
     this.worldGeo = (topojson.feature(worldTopo, worldTopo.objects.countries)).features;
 
+    // ---- Tools to generate countryNameIDtable
+    let mymap = new Map();
+    this.worldGeo.forEach((country: any) => {
+      mymap.set(country.properties.name, country.id)
+    });
+    let out = "";
+    mymap.forEach((value, key) => { out += `"${key}": "${value}",\n`} )
+    // console.log(out) // worldgeo countryname and id
+
+    // check which country is in worldGeo but not in countryNameIDtable
+    mymap = new Map();
+    out = "";
+    this.worldGeo.forEach((country: any) => {
+      if (!prop(countryNameIDtable, country.properties.name)) {
+        out += `"${country.properties.name}": "${country.id}",\n`
+      }
+    });
+    console.log(out)
+
+    // let countryNameMap = new Map();
+    // Object.keys(worldCovid[0]).forEach((country: any) => {
+    //   countryNameMap.set(country, mymap.get(country))
+    // });
+    // out = "";
+    // countryNameMap.forEach((value, key) => { out += `"${key}": "${value}",\n`} )
+    // console.log(out) // world covid country name, and id from worldgeo
+
+    // ---- Tools end
+
     worldCovid.sort((d1: any, d2: any) => {
       const date1 = new Date(d1.date);
       const date2 = new Date(d2.date);
