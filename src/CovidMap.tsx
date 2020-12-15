@@ -15,7 +15,7 @@ export interface IWorldData {
   infected: number;
 }
 
-export class CovidMap extends Component<{}, {sliderProps: any}> {
+export class CovidMap extends Component<{}, { sliderProps: any }> {
   state = {
     sliderProps: undefined,
   };
@@ -47,13 +47,18 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
   }
 
   async getWorldData() {
-    const [worldTopo, worldCovid]  = await Promise.all([
-      d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json'),
+    const [worldTopo, worldCovid] = await Promise.all([
+      d3.json(
+        'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json'
+      ) as any,
       d3.csv('https://covid.ourworldindata.org/data/ecdc/total_cases.csv'),
     ]);
 
     // worldGeo.id is country. worldGeo.geometry contains type Polygon and coordinates array
-    this.worldGeo = (topojson.feature(worldTopo, worldTopo.objects.countries)).features;
+    this.worldGeo = topojson.feature(
+      worldTopo,
+      worldTopo.objects.countries
+    ).features;
 
     // ---- Tools to generate countryNameIDtable
     // let mymap = new Map();
@@ -89,27 +94,29 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
       const date2 = new Date(d2.date);
       return date1.getTime() - date2.getTime();
     });
-    this.startDate = new Date(worldCovid[0].date);
-    this.endDate = new Date(worldCovid[worldCovid.length - 1].date);
+    this.startDate = new Date(worldCovid[0].date as any);
+    this.endDate = new Date(worldCovid[worldCovid.length - 1].date as any);
 
     let yesterdayDataPerCountry: any = null;
     for (const day of worldCovid) {
       // iterate through each country to fill in blank data
       for (const country in day) {
         if (Object.prototype.hasOwnProperty.call(day, country)) {
-          if (country === 'date') { continue; }
+          if (country === 'date') {
+            continue;
+          }
           const infected = day[country];
           if (infected === '') {
             // no data for today, check yesterday
             if (yesterdayDataPerCountry === null) {
-              day[country] = 0;
+              day[country] = 0 as any;
             } else {
               day[country] = yesterdayDataPerCountry[country];
             }
           }
         }
       }
-      const date = new Date(day.date);
+      const date = new Date(day.date as any);
       this.worldCovid.set(this.constructWorldCovidKey(date), day);
       yesterdayDataPerCountry = day;
     }
@@ -121,10 +128,14 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
 
   createColorScale() {
     const colorScaleMax = this.colorScaleMax;
-    const logScale = d3.scaleLog()
-      .domain([1, colorScaleMax]);
-    const colorScale = d3.scaleSequential(
-        (d) => d === 0 ? this.colorNonInfacted : (d >= colorScaleMax ? '#4d0000' : d3.interpolateYlOrRd(logScale(d))) );
+    const logScale = d3.scaleLog().domain([1, colorScaleMax]);
+    const colorScale = d3.scaleSequential((d) =>
+      d === 0
+        ? this.colorNonInfacted
+        : d >= colorScaleMax
+        ? '#4d0000'
+        : d3.interpolateYlOrRd(logScale(d) as any)
+    );
     return colorScale;
   }
 
@@ -135,34 +146,49 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
 
     const width = 1024;
     const height = 768;
-    const svg = d3.select('#CovidMap')
-      .selectAll('.svg-container').data([null]).join('div')
-        .classed('svg-container', true)
-        .selectAll('svg').data([null]).join('svg')
-          .classed('svg-content-responsive', true)
-          .attr('viewBox', `0 0 ${width} ${height}`)
-          .attr('preserveAspectRatio', `xMinYMin meet`);
+    const svg = d3
+      .select('#CovidMap')
+      .selectAll('.svg-container')
+      .data([null])
+      .join('div')
+      .classed('svg-container', true)
+      .selectAll('svg')
+      .data([null])
+      .join('svg')
+      .classed('svg-content-responsive', true)
+      .attr('viewBox', `0 0 ${width} ${height}`)
+      .attr('preserveAspectRatio', `xMinYMin meet`);
 
     const zoomG = svg
-      .selectAll('.zoom-container').data([null]).join('g')
+      .selectAll('.zoom-container')
+      .data([null])
+      .join('g')
       .attr('class', 'zoom-container');
 
     zoomG
-      .selectAll('.title').data([null]).join('text')
-        .attr('class', 'title')
-        .text('COVID-19 Outbreak Across the World')
-        .attr('font-size', '1.5em')
-        .attr('font-family', 'sans-serif')
-        .attr('transform', `translate(270, 50)`);
+      .selectAll('.title')
+      .data([null])
+      .join('text')
+      .attr('class', 'title')
+      .text('COVID-19 Outbreak Across the World')
+      .attr('font-size', '1.5em')
+      .attr('font-family', 'sans-serif')
+      .attr('transform', `translate(270, 50)`);
 
-    const tooltip = d3.select('#CovidMap').selectAll('.country-tooltip').data([null]).join('div')
+    const tooltip = d3
+      .select('#CovidMap')
+      .selectAll('.country-tooltip')
+      .data([null])
+      .join('div')
       .attr('class', 'country-tooltip')
       .style('opacity', 0);
 
     // Grouping everything in the map
     const mapG = zoomG
-      .selectAll('.map').data([null]).join('g')
-        .attr('class', 'map');
+      .selectAll('.map')
+      .data([null])
+      .join('g')
+      .attr('class', 'map');
     const basicMapProps: IBasicMap = {
       selector: mapG,
       projection: d3.geoNaturalEarth1().scale(125),
@@ -176,9 +202,11 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
 
     // draw color legend
     const colorLegendG = zoomG
-      .selectAll('.colorLegend').data([null]).join('g')
-        .attr('class', 'colorLegend')
-        .attr('transform', 'translate(210, 260) scale(0.5, 0.5)');
+      .selectAll('.colorLegend')
+      .data([null])
+      .join('g')
+      .attr('class', 'colorLegend')
+      .attr('transform', 'translate(210, 260) scale(0.5, 0.5)');
 
     let clickedDomain: any;
     const onClick = (d: [number, number] | null) => {
@@ -197,9 +225,11 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
 
     // draw slider
     const sliderG = zoomG
-      .selectAll('.slider').data([null]).join('g')
-        .attr('class', 'slider')
-        .attr('transform', 'translate(200, 450) scale(0.5, 0.5)');
+      .selectAll('.slider')
+      .data([null])
+      .join('g')
+      .attr('class', 'slider')
+      .attr('transform', 'translate(200, 450) scale(0.5, 0.5)');
     const sliderProps = {
       selector: sliderG,
       startDate: this.startDate as Date,
@@ -231,9 +261,14 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
 
   colorMapByDay(date: Date) {
     // change color of map everyday
-    const todayWorldCovid = this.worldCovid.get(this.constructWorldCovidKey(date));
+    const todayWorldCovid = this.worldCovid.get(
+      this.constructWorldCovidKey(date)
+    );
     if (!isNullOrUndefined(todayWorldCovid)) {
-      const worldData = this.combineWordGeoAndCovid(this.worldGeo, todayWorldCovid);
+      const worldData = this.combineWordGeoAndCovid(
+        this.worldGeo,
+        todayWorldCovid
+      );
       this.coloredMap.coloringMap(this.colorScale, worldData);
     }
   }
@@ -264,10 +299,12 @@ export class CovidMap extends Component<{}, {sliderProps: any}> {
   render() {
     if (!isNullOrUndefined(this.state.sliderProps)) {
       const sliderProps = this.state.sliderProps as any;
-      return <div id="CovidMap">
-              <DateSlider {...sliderProps} />
-             </ div>;
+      return (
+        <div id='CovidMap'>
+          <DateSlider {...sliderProps} />
+        </div>
+      );
     }
-    return <div id="CovidMap"/>;
+    return <div id='CovidMap' />;
   }
 }
